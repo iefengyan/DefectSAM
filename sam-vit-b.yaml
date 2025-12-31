@@ -5,7 +5,6 @@ model:
   args:
     inp_size: 1024
     encoder_mode:
-      name: sam
       img_size: 1024
       mlp_ratio: 4
       patch_size: 16
