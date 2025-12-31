@@ -12,24 +12,7 @@ import numpy as np
 from PIL import Image
 import  time
 
-def batched_predict(model, inp, coord, bsize):
-    with torch.no_grad():
-        model.gen_feat(inp)
-        n = coord.shape[1]
-        ql = 0
-        preds = []
-        while ql < n:
-            qr = min(ql + bsize, n)
-            pred = model.query_rgb(coord[:, ql: qr, :])
-            preds.append(pred)
-            ql = qr
-        pred = torch.cat(preds, dim=1)
-    return pred, preds
 
-
-def tensor2PIL(tensor):
-    toPIL = transforms.ToPILImage()
-    return toPIL(tensor)
 
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
