@@ -11,14 +11,6 @@ import cv2
 import numpy as np
 from PIL import Image
 import  time
-
-
-
-
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
-
-
 def eval_psnr(test_image_root, test_gt_root, model, inp_size, pred_save):
     FM = Fmeasure()
     WFM = WeightedFmeasure()
