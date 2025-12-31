@@ -22,4 +22,4 @@ If you find our work useful in your research, please consider citing:
   }
 ```
 # Acknowledgement
-We would like to acknowledge the contributions of public projects, such as [SAM-Adaper]([https://github.com/tianrun-chen/SAM-Adapter-PyTorch), whose code has been utilized in this repository.
+We would like to acknowledge the contributions of public projects, such as [SAM-Adaper](https://github.com/tianrun-chen/SAM-Adapter-PyTorch), whose code has been utilized in this repository.
