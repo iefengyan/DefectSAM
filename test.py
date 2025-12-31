@@ -20,7 +20,6 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
 def eval_psnr(test_image_root, test_gt_root, model, inp_size, pred_save):
-    
     FM = Fmeasure()
     WFM = WeightedFmeasure()
     SM = Smeasure()
@@ -38,26 +37,18 @@ def eval_psnr(test_image_root, test_gt_root, model, inp_size, pred_save):
     gts = sorted(gts)
     model.eval()
     total_time=0
-    torch.cuda.empty_cache()
-    torch.cuda.reset_peak_memory_stats()
     for index in tqdm(range(len(images))):
 
         ori_image=Image.open(images[index]).convert("RGB")
         gt = cv2.imread(gts[index], cv2.IMREAD_GRAYSCALE)
         image = img_transform(ori_image).unsqueeze(0).cuda()
-
-
         H, W = gt.shape
-        # print(print_gpu_memory_usage())
-
         with torch.no_grad():
             start_time = time.time()
             res=model(image)[0]
             end_time = time.time()
     
-  
         res = torch.sigmoid(res).data.cpu().numpy().squeeze()
-
         pred = (res - res.min()) / (res.max() - res.min() + 1e-8)
         pred = Image.fromarray(pred * 255).convert('L')
         pred = pred.resize((W, H), resample=Image.BILINEAR)
@@ -77,18 +68,15 @@ def eval_psnr(test_image_root, test_gt_root, model, inp_size, pred_save):
     sm = SM.get_results()["sm"]
     em = EM.get_results()["em"]
     mae = M.get_results()["mae"]
-    # print(len(images)/total_time)
 
     curr_results = {
-
         "MAE": '%.4f' % mae,
         "wFmeasure": '%.4f' % wfm,
         "Smeasure": '%.4f' % sm,
         "meanFm": '%.4f' % fm["curve"].mean(),
         "meanEm": '%.4f' % em["curve"].mean(),
     }
-    print(len(images) / total_time)
-
+  
 
     return curr_results
 
@@ -105,7 +93,7 @@ if __name__ == '__main__':
         config = yaml.load(f, Loader=yaml.FullLoader)
 
     inp_size=1024
-    config['model']['name']="defect_sam"
+    config['model']['name']="defectsam"
     config['model']['args']['inp_size'] = inp_size
 
     model = models.make(config['model']).cuda()
@@ -115,13 +103,9 @@ if __name__ == '__main__':
     model.eval()
 
     model = model.cuda()
+   
     from thop import profile, clever_format
-
-
-    from thop import profile, clever_format
-
-    #
-    input = torch.randn(1, 3, 512, 512).cuda()
+    input = torch.randn(1, 3, inp_size, inp_size).cuda()
     flops, params = profile(model, inputs=(input,))
 
     flops, params = clever_format([flops, params], "%.3f")
@@ -133,19 +117,16 @@ if __name__ == '__main__':
     for dataset_name in dataset_names:
         print(dataset_name)
 
-        sam_checkpoint = torch.load("D:\yanfeng\sam\save\\mobilesam\\mobile_sam-ZJU-Leaper-0.7422.pth")
+        sam_checkpoint = torch.load("D:\yanfeng\sam\save\\mobilesam\\mobile_sam-ZJU-Leaper-0.7422.pth") ## pretrained model path
         model.load_state_dict(sam_checkpoint,strict=False)
 
         file_dir = "D:\yanfeng\BASNet-master\SemanticData\process\\"
         test_image_root = os.path.join(file_dir, dataset_name + "\\test\\images\\")
         test_gt_root = os.path.join(file_dir, dataset_name + "\\test\\gt\\")
 
-        # test_loader = get_loader(test_image_root, test_gt_root, batchsize=1, trainsize=1024, is_train=False)
 
         pred_dir = "D:\yanfeng\project\save\preds\\"
         pred_save = os.path.join(pred_dir, "defectsam\\" + dataset_name+"\\")
-        # pred_save = os.path.join(pred_dir,  dataset_name)
-        # pred_save="D:\yanfeng\sam\save\\ablation0\zju\\nocnn_share\\"
 
         if not os.path.isdir(pred_save):
             os.makedirs(pred_save)
@@ -153,4 +134,4 @@ if __name__ == '__main__':
         metrics= eval_psnr(test_image_root, test_gt_root, model, inp_size, pred_save)
 
         print(metrics)
-    #
+   
