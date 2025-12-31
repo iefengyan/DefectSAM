@@ -17,9 +17,7 @@ If you find our work useful in your research, please consider citing:
   year={2025},
   volume={36},
   number={10},
-  pages={18830-18843}
-}
-  }
+  pages={18830-18843}}
 ```
 # Acknowledgement
 We would like to acknowledge the contributions of public projects, such as [SAM-Adaper](https://github.com/tianrun-chen/SAM-Adapter-PyTorch), whose code has been utilized in this repository.
