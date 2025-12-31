@@ -96,46 +96,7 @@ class ImageEncoderViT(nn.Module):
                 input_size=(img_size // patch_size, img_size // patch_size),
             )
             self.blocks.append(block)
-        #
-        # self.neck = nn.Sequential(
-        #     nn.Conv2d(
-        #         embed_dim,
-        #         out_chans,
-        #         kernel_size=1,
-        #         bias=False,
-        #     ),
-        #     LayerNorm2d(out_chans),
-        #     nn.Conv2d(
-        #         out_chans,
-        #         out_chans,
-        #         kernel_size=3,
-        #         padding=1,
-        #         bias=False,
-        #     ),
-        #     LayerNorm2d(out_chans),
-        # )
-        # # # #
-        # self.scale_factor = 32
-        #
-        # self.prompt_type = 'highpass'
-        # self.tuning_stage = 1234
-        # self.input_type = 'fft'
-        # self.freq_nums = 0.25
-        # self.handcrafted_tune = True
-        # self.embedding_tune = True
-        # self.adaptor = 'adaptor'
-        # self.prompt_generator = PromptGenerator(self.scale_factor, self.prompt_type, self.embed_dim,
-        #                                        self.tuning_stage, self.depth,
-        #                                        self.input_type, self.freq_nums,
-        #                                        self.handcrafted_tune, self.embedding_tune, self.adaptor,
-        #                                        img_size, patch_size)
-        #
-        # self.num_stages = self.depth
-        # self.out_indices = tuple(range(self.num_stages))
-
-
-        # sam-hq
-        # self.out_indices = global_attn_indexes
+      
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
 
@@ -150,40 +111,7 @@ class ImageEncoderViT(nn.Module):
                 outs.append(x)
 
         return outs
-        #
-
-        # #
-
-        # interm_embeddings = []
-        # for blk in self.blocks:
-        #    x = blk(x)
-        #    if blk.window_size == 0:
-        #          interm_embeddings.append(x)
-        # # #
-        # x = self.neck(x.permute(0, 3, 1, 2))
-        # # #
-        # return x, interm_embeddings
-
-        # sam-adapter
-        inp = x
-        x = self.patch_embed(x)
-
-        embedding_feature = self.prompt_generator.init_embeddings(x)
-        handcrafted_feature = self.prompt_generator.init_handcrafted(inp)
-        prompt = self.prompt_generator.get_prompt(handcrafted_feature, embedding_feature)
-        if self.pos_embed is not None:
-            x = x + self.pos_embed
-
-        B, H, W = x.shape[0], x.shape[1], x.shape[2]
-        outs = []
-        for i, blk in enumerate(self.blocks):
-            x = prompt[i].reshape(B, H, W, -1) + x
-            x = blk(x)
-            if i in self.out_indices:
-                outs.append(x)
-
-        x = self.neck(x.permute(0, 3, 1, 2))
-        return x
+    
 
 
 def to_2tuple(x):
